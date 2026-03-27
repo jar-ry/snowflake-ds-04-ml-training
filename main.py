@@ -59,7 +59,7 @@ def run_range(conf: dict, start: str, end: str):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="CLV Model Training Pipeline Runner",
+        description="Customer Value Model Training Pipeline Runner",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(

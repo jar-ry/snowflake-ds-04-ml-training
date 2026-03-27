@@ -116,6 +116,10 @@ def train():
             model_name=model_name,
             version_name=run.name,
             sample_input_data=X_train,
+            target_platforms=["WAREHOUSE", "SNOWPARK_CONTAINER_SERVICES"],
+            options={
+                "enable_explainability": True,
+            },
         )
 
         mr = Registry(

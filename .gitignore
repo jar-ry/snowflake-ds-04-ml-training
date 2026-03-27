@@ -1,0 +1,27 @@
+# Snowflake
+connection.json
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[codz]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Environments
+.env
+.envrc
+.venv
+venv/
+
+# IDE
+.idea/
+.vscode/
+.ruff_cache/
+
+# OS
+.DS_Store

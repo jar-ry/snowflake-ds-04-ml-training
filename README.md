@@ -31,7 +31,7 @@ ml-training-repo/
 │       └── versioning.py              # Auto-increment version helpers
 ├── pipelines/
 │   ├── training_pipeline.py            # submit_directory to compute pool
-│   ├── promotion_pipeline.py           # Find best model, promote
+│   ├── promotion_pipeline.py           # Explain best model + promote
 │   ├── inference_pipeline.py           # Deploy service, run predictions, save baseline
 │   ├── scheduling_pipeline.py          # Create stored procedure + Task
 │   └── monitoring_pipeline.py          # Set up ModelMonitor

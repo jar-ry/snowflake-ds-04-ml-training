@@ -15,27 +15,27 @@ ml-training-repo/
 ├── conda.yml                           # Conda environment for ML Jobs
 ├── conf/
 │   └── parameters.yml                  # All config: Snowflake, modelling, HPO, compute, serving, scheduling, monitoring
-├── src/
-│   ├── session.py                      # Snowpark session factory
-│   ├── modelling/
-│   │   ├── train.py                    # ML Job entrypoint for HPO (submitted via submit_directory)
-│   │   ├── pipeline.py                 # sklearn Pipeline: ColumnTransformer + XGBRegressor
-│   │   ├── splitter.py                 # Load Versioned Dataset, train/val split
-│   │   └── evaluate.py                 # MAE, MAPE, R² metrics
-│   ├── ml_engineering/
-│   │   ├── promotion.py                # Best-version selection, tag + set default
-│   │   ├── serving.py                  # SPCS service deployment, batch predictions
-│   │   ├── scheduling.py              # Stored procedure + Task for scheduled inference
-│   │   └── monitoring.py               # ModelMonitor for drift detection
-│   └── utils/
-│       ├── helpers.py                  # table_exists utility
-│       └── versioning.py              # Auto-increment version helpers
-└── pipelines/
-    ├── training_pipeline.py            # submit_directory to compute pool
-    ├── promotion_pipeline.py           # Find best model, promote
-    ├── inference_pipeline.py           # Deploy service, run predictions, save baseline
-    ├── scheduling_pipeline.py          # Create stored procedure + Task
-    └── monitoring_pipeline.py          # Set up ModelMonitor
+└── src/
+    ├── session.py                      # Snowpark session factory
+    ├── pipelines/
+    │   ├── training_pipeline.py        # submit_directory to compute pool
+    │   ├── promotion_pipeline.py       # Find best model, promote
+    │   ├── inference_pipeline.py       # Deploy service, run predictions, save baseline
+    │   ├── scheduling_pipeline.py      # Create stored procedure + Task
+    │   └── monitoring_pipeline.py      # Set up ModelMonitor
+    ├── modelling/
+    │   ├── train.py                    # ML Job entrypoint for HPO (submitted via submit_directory)
+    │   ├── pipeline.py                 # sklearn Pipeline: ColumnTransformer + XGBRegressor
+    │   ├── splitter.py                 # Load Versioned Dataset, train/val split
+    │   └── evaluate.py                 # MAE, MAPE, R² metrics
+    ├── ml_engineering/
+    │   ├── promotion.py                # Best-version selection, tag + set default
+    │   ├── serving.py                  # SPCS service deployment, batch predictions
+    │   ├── scheduling.py              # Stored procedure + Task for scheduled inference
+    │   └── monitoring.py               # ModelMonitor for drift detection
+    └── utils/
+        ├── helpers.py                  # table_exists utility
+        └── versioning.py              # Auto-increment version helpers
 ```
 
 ## Step 1: Gather Requirements
@@ -177,7 +177,7 @@ If errors occur, help debug by reading logs and tracing the issue back to the re
 ## Important Notes
 
 - **Never hardcode values** — everything goes in `conf/parameters.yml`
-- **Keep the pipeline orchestration pattern** — individual pipelines in `pipelines/`, business logic in `src/`
+- **Keep the pipeline orchestration pattern** — individual pipelines in `src/pipelines/`, business logic in `src/` domain packages
 - **Preserve the `submit_directory` pattern** — `train.py` runs inside a Snowflake container, so it must load config from `conf/parameters.yml` at runtime
 - **The `train()` function in `train.py` is called by Ray workers** — imports must happen inside the function, not at module level (path issues in distributed execution)
 - **This repo never touches raw tables** — it reads from Versioned Datasets only. If the user needs new features, direct them to the Feature Store repo.

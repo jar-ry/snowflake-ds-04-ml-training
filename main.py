@@ -3,7 +3,7 @@ import sys
 
 import yaml
 
-from pipelines import (
+from src.pipelines import (
     inference_pipeline,
     monitoring_pipeline,
     promotion_pipeline,

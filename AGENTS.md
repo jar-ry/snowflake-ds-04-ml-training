@@ -15,28 +15,27 @@ The contract between this repo and the Feature Store repo is a **Versioned Datas
 ├── conda.yml                        # Conda environment
 ├── conf/
 │   └── parameters.yml               # All pipeline configuration
-├── pipelines/
-│   ├── training_pipeline.py         # Submit HPO training job via submit_directory
-│   ├── promotion_pipeline.py        # Explain best model + promote (alias, tags, default)
-│   ├── inference_pipeline.py        # Batch inference via model version
-│   ├── scheduling_pipeline.py       # Scheduled batch inference via stored procedure
-│   └── monitoring_pipeline.py       # ModelMonitor for drift detection
-├── src/
-│   ├── session.py                   # Snowpark session factory
-│   ├── modelling/
-│   │   ├── train.py                 # ML Job entrypoint for HPO (submit_directory target)
-│   │   ├── pipeline.py              # sklearn Pipeline (ColumnTransformer + XGBRegressor)
-│   │   ├── splitter.py              # Load Versioned Dataset, train/val split
-│   │   └── evaluate.py             # MAE, MAPE, R² metrics
-│   ├── ml_engineering/
-│   │   ├── promotion.py             # Best-version selection, tag + set default
-│   │   ├── serving.py               # SPCS service deployment, batch predictions
-│   │   ├── scheduling.py            # Stored procedure + Task for scheduled inference
-│   │   └── monitoring.py            # ModelMonitor setup
-│   └── utils/
-│       ├── helpers.py               # table_exists utility
-│       └── versioning.py            # Auto-increment version helpers
-└── connection.json.example          # Snowflake credentials template
+└── src/
+    ├── session.py                   # Snowpark session factory
+    ├── pipelines/
+    │   ├── training_pipeline.py     # Submit HPO training job via submit_directory
+    │   ├── promotion_pipeline.py    # Explain best model + promote (alias, tags, default)
+    │   ├── inference_pipeline.py    # Batch inference via model version
+    │   ├── scheduling_pipeline.py   # Scheduled batch inference via stored procedure
+    │   └── monitoring_pipeline.py   # ModelMonitor for drift detection
+    ├── modelling/
+    │   ├── train.py                 # ML Job entrypoint for HPO (submit_directory target)
+    │   ├── pipeline.py              # sklearn Pipeline (ColumnTransformer + XGBRegressor)
+    │   ├── splitter.py              # Load Versioned Dataset, train/val split
+    │   └── evaluate.py             # MAE, MAPE, R² metrics
+    ├── ml_engineering/
+    │   ├── promotion.py             # Best-version selection, tag + set default
+    │   ├── serving.py               # SPCS service deployment, batch predictions
+    │   ├── scheduling.py            # Stored procedure + Task for scheduled inference
+    │   └── monitoring.py            # ModelMonitor setup
+    └── utils/
+        ├── helpers.py               # table_exists utility
+        └── versioning.py            # Auto-increment version helpers
 ```
 
 ## Environment
@@ -93,7 +92,7 @@ All parameters live in `conf/parameters.yml`. Same structure as the single-repo 
 
 ## Architecture Notes
 
-- `submit_directory` ships the entire project to the compute pool. `src/modelling/train.py` is the entrypoint.
+- `submit_directory` builds a clean payload from `src/` (excluding `pipelines/`) + `conf/` and submits it to the compute pool. `modelling/train.py` is the entrypoint.
 - `train.py` has two roles: (1) the `train()` function is the per-trial HPO function run by Ray workers, (2) the `__main__` block sets up the Tuner and launches HPO.
 - `SnowflakeXgboostCallback` is commented out — it doesn't support `target_platforms` or `enable_explainability`. Models are logged via `exp.log_model()` with `target_platforms=["WAREHOUSE", "SNOWPARK_CONTAINER_SERVICES"]` and `options={"enable_explainability": True}`.
 - Before HPO, the `__main__` block pre-creates the model in the Registry with a dummy version to avoid "Object already exists" race conditions from parallel trials.
@@ -113,5 +112,5 @@ ds = Dataset.load(session=session, name="RETAIL_REGRESSION_DEMO.FEATURE_STORE.TR
 - **Change model type:** Edit `src/modelling/pipeline.py`, update `hpo` section in `parameters.yml`, update `src/modelling/evaluate.py`
 - **Change HPO:** Modify `hpo` section in `parameters.yml` (parameter names must match model constructor args)
 - **Change compute:** Adjust `compute` section in `parameters.yml`
-- **Add a pipeline stage:** Create `pipelines/new_pipeline.py` with a `run(session, conf)` function, register in `main.py`
+- **Add a pipeline stage:** Create `src/pipelines/new_pipeline.py` with a `run(session, conf)` function, register in `main.py`
 - **Refactor for a different use case:** Use the `refactor-framework` Cortex Code skill (`.cortex/skills/refactor-framework/SKILL.md`)

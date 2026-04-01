@@ -14,28 +14,27 @@ ml-training-repo/
 ├── .gitignore
 ├── conf/
 │   └── parameters.yml                  # All config: Snowflake, modelling, HPO, compute, serving, scheduling, monitoring
-├── src/
-│   ├── session.py                      # Snowpark session factory
-│   ├── modelling/
-│   │   ├── train.py                    # ML Job entrypoint for HPO (submitted via submit_directory)
-│   │   ├── pipeline.py                 # sklearn Pipeline: ColumnTransformer + XGBRegressor
-│   │   ├── splitter.py                 # Load Versioned Dataset, train/val split
-│   │   └── evaluate.py                 # MAE, MAPE, R² metrics
-│   ├── ml_engineering/
-│   │   ├── promotion.py                # Best-version selection, tag + set default
-│   │   ├── serving.py                  # SPCS service deployment, batch predictions
-│   │   ├── scheduling.py              # Stored procedure + Task for scheduled inference
-│   │   └── monitoring.py               # ModelMonitor for drift detection
-│   └── utils/
-│       ├── helpers.py                  # table_exists utility
-│       └── versioning.py              # Auto-increment version helpers
-├── pipelines/
-│   ├── training_pipeline.py            # submit_directory to compute pool
-│   ├── promotion_pipeline.py           # Explain best model + promote
-│   ├── inference_pipeline.py           # Deploy service, run predictions, save baseline
-│   ├── scheduling_pipeline.py          # Create stored procedure + Task
-│   └── monitoring_pipeline.py          # Set up ModelMonitor
-└── README.md
+└── src/
+    ├── session.py                      # Snowpark session factory
+    ├── pipelines/
+    │   ├── training_pipeline.py        # submit_directory to compute pool
+    │   ├── promotion_pipeline.py       # Explain best model + promote
+    │   ├── inference_pipeline.py       # Deploy service, run predictions, save baseline
+    │   ├── scheduling_pipeline.py      # Create stored procedure + Task
+    │   └── monitoring_pipeline.py      # Set up ModelMonitor
+    ├── modelling/
+    │   ├── train.py                    # ML Job entrypoint for HPO (submitted via submit_directory)
+    │   ├── pipeline.py                 # sklearn Pipeline: ColumnTransformer + XGBRegressor
+    │   ├── splitter.py                 # Load Versioned Dataset, train/val split
+    │   └── evaluate.py                 # MAE, MAPE, R² metrics
+    ├── ml_engineering/
+    │   ├── promotion.py                # Best-version selection, tag + set default
+    │   ├── serving.py                  # SPCS service deployment, batch predictions
+    │   ├── scheduling.py              # Stored procedure + Task for scheduled inference
+    │   └── monitoring.py               # ModelMonitor for drift detection
+    └── utils/
+        ├── helpers.py                  # table_exists utility
+        └── versioning.py              # Auto-increment version helpers
 ```
 
 ## Quick Start

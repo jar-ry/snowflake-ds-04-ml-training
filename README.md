@@ -33,7 +33,7 @@ ml-training-repo/
     │   ├── scheduling.py              # Stored procedure + Task for scheduled inference
     │   └── monitoring.py               # ModelMonitor for drift detection
     └── utils/
-        ├── helpers.py                  # table_exists utility
+        ├── helpers.py                  # table_exists, get_or_create_registry utilities
         └── versioning.py              # Auto-increment version helpers
 ```
 

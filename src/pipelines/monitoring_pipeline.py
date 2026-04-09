@@ -1,8 +1,6 @@
-from snowflake.ml.registry import Registry
-
 from src.ml_engineering.monitoring import setup_monitor
 from src.ml_engineering.promotion import get_best_model_version
-from src.utils.helpers import table_exists
+from src.utils.helpers import get_or_create_registry, table_exists
 
 
 def run(session, conf: dict):
@@ -22,7 +20,7 @@ def run(session, conf: dict):
         print("Skipping monitoring setup.")
         return None
 
-    mr = Registry(session=session, database_name=database, schema_name=mr_schema)
+    mr = get_or_create_registry(session, database, mr_schema)
 
     best_version, _ = get_best_model_version(mr, model_name)
     if best_version is None:

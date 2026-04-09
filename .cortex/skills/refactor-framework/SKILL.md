@@ -34,7 +34,7 @@ ml-training-repo/
     │   ├── scheduling.py              # Stored procedure + Task for scheduled inference
     │   └── monitoring.py               # ModelMonitor for drift detection
     └── utils/
-        ├── helpers.py                  # table_exists utility
+        ├── helpers.py                  # table_exists, get_or_create_registry utilities
         └── versioning.py              # Auto-increment version helpers
 ```
 
@@ -61,7 +61,7 @@ ml-training-repo/
 
 **Changes:**
 - `snowflake.*` — Update database, schema, role, warehouse to user's values
-- `feature_store.*` — Update dataset name, feature view references
+- `feature_store.*` — Update dataset name, feature view references. If inference uses multiple feature views, add a `feature_views` list with `name` and `version` entries
 - `model_registry.schema` — Update if needed
 - `modelling.*` — New model name, experiment name, target column, feature/numerical/categorical/ordinal columns, ordinal categories, tuning metric (change to appropriate metric for classification vs regression)
 - `hpo.*` — Update hyperparameter search space to match the new algorithm (e.g. XGBClassifier params differ from XGBRegressor)
@@ -90,6 +90,9 @@ ml-training-repo/
   - Regression: MAE, MAPE, RMSE, R²
 - Update the return dict keys — these must match what `train.py` reports and what `promotion.py` uses to find the best version
 
+### `src/utils/helpers.py`
+- `get_or_create_registry(session, database, schema)` ensures the schema exists, creates the Registry, and restores the previous schema. All pipeline files use this instead of instantiating Registry directly.
+
 ### `src/modelling/train.py`
 - Update imports if the model library changed (e.g. `import lightgbm` instead of `import xgboost`)
 - The HPO search space is built dynamically from `parameters.yml`, so it should mostly work — but verify the parameter names match the new model's API
@@ -107,7 +110,7 @@ ml-training-repo/
 - Update the default `metric` parameter in `get_best_model_version()` to match the new tuning metric from config
 
 ### `src/ml_engineering/serving.py`
-- Usually no changes — it's generic (calls `mv.run()`)
+- `run_batch_predictions()` accepts either a table name (string) or a Snowpark DataFrame as `input_data` — no changes usually needed
 - If the user needs different prediction column naming, update `prediction_column` parameter
 
 ### `src/ml_engineering/monitoring.py`
@@ -126,6 +129,7 @@ ml-training-repo/
 - [ ] The `modelling.target_column` exists in the dataset
 - [ ] `modelling.numerical_features` and `modelling.categorical_features` cover all feature columns
 - [ ] Column names are consistent between repos (case-sensitive in Snowflake)
+- [ ] If using multiple feature views for inference, all model input columns are covered across the configured views
 
 **If the Feature Store repo exists alongside this repo**, cross-reference:
 1. Read the feature repo's `source.yaml` for the relevant domain

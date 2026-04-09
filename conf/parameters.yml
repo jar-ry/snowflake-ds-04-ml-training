@@ -8,8 +8,13 @@ snowflake:
 
 feature_store:
   schema: FEATURE_STORE
-  feature_view_name: FV_PREPROCESS
+  feature_view_name: FV_CUSTOMER_BASE
   feature_view_version: V_1
+  feature_views:
+    - name: FV_CUSTOMER_BASE
+      version: V_1
+    - name: FV_CUSTOMER_DERIVED
+      version: V_1
   dataset_name: TRAINING_DATASET
 
 model_registry:

@@ -26,12 +26,12 @@ from snowflake.ml.data.data_connector import DataConnector
 from snowflake.ml.experiment import ExperimentTracking
 # from snowflake.ml.experiment.callback.xgboost import SnowflakeXgboostCallback
 # from snowflake.ml.model.model_signature import infer_signature
-from snowflake.ml.registry import Registry
 from snowflake.snowpark import Session
 
 from modelling.evaluate import evaluate_model
 from modelling.pipeline import build_pipeline
 from modelling.splitter import create_data_connector, generate_train_val_set
+from utils.helpers import get_or_create_registry
 
 
 def _load_conf() -> dict:
@@ -118,11 +118,7 @@ def train():
             },
         )
 
-        mr = Registry(
-            session=session,
-            database_name=session.get_current_database(),
-            schema_name=mr_schema_name,
-        )
+        mr = get_or_create_registry(session, session.get_current_database(), mr_schema_name)
         mv = mr.get_model(model_name).version(run.name)
         for metric_name, metric_value in metrics.items():
             if metric_name == "run_name":
@@ -189,7 +185,7 @@ if __name__ == "__main__":
 
     mr_schema = conf["model_registry"]["schema"]
     mr_model = modelling["model_name"]
-    mr = Registry(session=session, database_name=database, schema_name=mr_schema)
+    mr = get_or_create_registry(session, database, mr_schema)
     try:
         mr.get_model(mr_model)
         print(f"Model {mr_model} already exists — skipping dummy creation")

@@ -1,6 +1,5 @@
-from snowflake.ml.registry import Registry
-
 from src.ml_engineering.promotion import get_best_model_version, promote_model
+from src.utils.helpers import get_or_create_registry
 
 
 def run(session, conf: dict):
@@ -12,7 +11,7 @@ def run(session, conf: dict):
     mr_schema = conf["model_registry"]["schema"]
     model_name = conf["modelling"]["model_name"]
 
-    mr = Registry(session=session, database_name=database, schema_name=mr_schema)
+    mr = get_or_create_registry(session, database, mr_schema)
 
     print(f"\n[1/2] Finding best version for {model_name}...")
     metric = conf["modelling"].get("tuning_metric", "mean_absolute_percentage_error")

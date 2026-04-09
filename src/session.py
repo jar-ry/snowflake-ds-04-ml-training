@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 from snowflake.snowpark import Session
 from snowflake.snowpark.version import VERSION
@@ -10,7 +11,9 @@ def _quote_id(name: str) -> str:
 
 def create_session(conf: dict) -> tuple:
     sf = conf["snowflake"]
-    with open(sf["connection_file"]) as f:
+    project_root = Path(__file__).resolve().parent.parent
+    conn_path = project_root / sf["connection_file"]
+    with open(conn_path) as f:
         connection_parameters = json.load(f)
 
     session = Session.builder.configs(connection_parameters).create()

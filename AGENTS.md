@@ -34,7 +34,7 @@ The contract between this repo and the Feature Store repo is a **Versioned Datas
     │   ├── scheduling.py            # Stored procedure + Task for scheduled inference
     │   └── monitoring.py            # ModelMonitor setup
     └── utils/
-        ├── helpers.py               # table_exists utility
+        ├── helpers.py               # table_exists, get_or_create_registry utilities
         └── versioning.py            # Auto-increment version helpers
 ```
 
@@ -61,7 +61,7 @@ python main.py --from training --to inference   # Run a range
 
 ## Snowflake Connection
 
-`src/session.py` reads `connection.json` (copy from `connection.json.example`).
+`src/session.py` reads `connection.json` from the project root (resolved via `Path(__file__).resolve().parent.parent`, not the working directory). Copy from `connection.json.example` and fill in your credentials.
 
 Environment variable override: set `SNOWFLAKE_CONNECTION_NAME` to use a named connection.
 
@@ -72,7 +72,7 @@ Inside ML Job containers, `Session.builder.getOrCreate()` provides the session a
 All parameters live in `conf/parameters.yml`. Same structure as the single-repo framework (Part 4). Key sections:
 
 - **snowflake** — database, schema, role, warehouse
-- **feature_store** — schema, FeatureView name, dataset name (read-only — this repo consumes, never writes)
+- **feature_store** — schema, feature view references (single via `feature_view_name`/`feature_view_version` or multiple via `feature_views` list), dataset name (read-only — this repo consumes, never writes)
 - **model_registry** — schema for versioned models
 - **modelling** — model name, feature/target columns, column types, encoders, tuning metric
 - **hpo** — hyperparameter search space
@@ -88,6 +88,7 @@ All parameters live in `conf/parameters.yml`. Same structure as the single-repo 
 - **Compute Pool:** `CUSTOMER_VALUE_MODEL_POOL_CPU`
 - **Model:** `UC01_SNOWFLAKEML_RF_REGRESSOR_MODEL`
 - **Dataset:** `TRAINING_DATASET` (consumed, not created — published by Feature Store repo)
+- **FeatureViews:** `FV_CUSTOMER_BASE`, `FV_CUSTOMER_DERIVED` (backed by Dynamic Tables, 60-minute refresh)
 - **Stage:** `payload_stage`
 
 ## Architecture Notes
@@ -97,6 +98,9 @@ All parameters live in `conf/parameters.yml`. Same structure as the single-repo 
 - `SnowflakeXgboostCallback` is commented out — it doesn't support `target_platforms` or `enable_explainability`. Models are logged via `exp.log_model()` with `target_platforms=["WAREHOUSE", "SNOWPARK_CONTAINER_SERVICES"]` and `options={"enable_explainability": True}`.
 - Before HPO, the `__main__` block pre-creates the model in the Registry with a dummy version to avoid "Object already exists" race conditions from parallel trials.
 - `promotion_pipeline.py` runs explainability (SHAP) on the best model before promoting it.
+- All pipeline files use `get_or_create_registry()` from `src/utils/helpers.py` to ensure the model registry schema exists before instantiating the Registry. This replaces inline `CREATE SCHEMA` calls and restores the current schema afterward.
+- The inference pipeline supports joining multiple feature views. Configure `feature_views` as a list in `parameters.yml` with `name` and `version` for each. The pipeline joins them on common columns before running predictions.
+- `serving.py`'s `run_batch_predictions()` accepts either a table name (string) or a Snowpark DataFrame as `input_data`.
 - This repo reads from a Versioned Dataset by name — it never imports feature logic or touches raw tables.
 
 ## The Contract

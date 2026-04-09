@@ -31,14 +31,17 @@ def run_batch_predictions(
     session,
     mr: Registry,
     model_name: str,
-    input_table: str,
+    input_data,
     output_table: str,
     service_name: str,
     prediction_column: str = "PREDICTION",
 ):
     model = mr.get_model(model_name)
     mv = model.default
-    input_df = session.table(input_table)
+    if isinstance(input_data, str):
+        input_df = session.table(input_data)
+    else:
+        input_df = input_data
     predictions = mv.run(input_df, function_name="predict", service_name=service_name)
     output_cols = [c for c in predictions.columns if c not in input_df.columns]
     if output_cols:
